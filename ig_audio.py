@@ -39,8 +39,8 @@ MANIFEST = """{
   "short_name": "Link to MP3",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#111111",
-  "theme_color": "#111111",
+  "background_color": "#0a0a0a",
+  "theme_color": "#0a0a0a",
   "icons": [{"src": "/icon.png", "sizes": "512x512", "type": "image/png"}]
 }"""
 
@@ -56,62 +56,124 @@ PAGE = """<!doctype html>
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Link to MP3">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#111111">
+<meta name="theme-color" content="#0a0a0a">
 <style>
-  :root { --bg:#ffffff; --fg:#111111; --muted:#6b6b6b; --field:#f2f2f4; --btn:#111111; --btnfg:#ffffff; --err:#b00020; }
-  @media (prefers-color-scheme: dark) {
-    :root { --bg:#111111; --fg:#f5f5f5; --muted:#9a9a9a; --field:#1f1f22; --btn:#f5f5f5; --btnfg:#111111; --err:#ff6b81; }
+  :root { color-scheme: dark; --amber:#ffb000; --glow:rgba(255,176,0,.6); --red:#ff5a36; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html, body { margin:0; background:#0a0a0a; color:var(--amber); }
+  body {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    min-height:100vh;
+    padding: calc(env(safe-area-inset-top, 0px) + 28px) 14px calc(env(safe-area-inset-bottom, 0px) + 24px);
+    background: radial-gradient(120% 60% at 50% 0%, #1c1c1f 0%, #0a0a0a 70%);
   }
-  * { box-sizing: border-box; }
-  html, body { margin:0; background:var(--bg); color:var(--fg); }
-  body { font-family:-apple-system, system-ui, sans-serif; min-height:100vh;
-    padding: calc(env(safe-area-inset-top, 0px) + 56px) 20px calc(env(safe-area-inset-bottom, 0px) + 24px); }
-  main { max-width:480px; margin:0 auto; }
-  h1 { font-size:28px; margin:0 0 4px; }
-  p.sub { color:var(--muted); margin:0 0 24px; }
-  input, button { width:100%; font-size:17px; padding:15px; border-radius:12px; border:0; }
-  input { background:var(--field); color:var(--fg); }
-  button { background:var(--btn); color:var(--btnfg); font-weight:600; margin-top:12px; }
-  button:disabled { opacity:.5; }
-  .err { color:var(--err); margin-top:14px; }
-  #out { margin-top:24px; }
-  audio { width:100%; }
-  .hint { color:var(--muted); font-size:13px; margin-top:10px; }
+  .unit {
+    max-width:480px; margin:0 auto; padding:14px; border-radius:18px;
+    background:linear-gradient(#2b2b2f, #17171a); border:1px solid #3a3a40;
+    box-shadow:0 1px 0 #55555c inset, 0 20px 40px rgba(0,0,0,.6);
+  }
+  .top { display:flex; justify-content:space-between; font-size:11px; letter-spacing:.3em; color:#b8b8c0; margin:2px 4px 12px; }
+  .brand { font-weight:700; }
+  .face { display:flex; align-items:center; gap:10px; }
+  .knob {
+    flex:0 0 40px; height:40px; border-radius:50%; position:relative; border:2px solid #111;
+    background:conic-gradient(#6d6d75, #2a2a2e, #8a8a92, #2a2a2e, #6d6d75);
+    box-shadow:0 2px 4px rgba(0,0,0,.7), inset 0 1px 1px rgba(255,255,255,.3);
+  }
+  .knob::after { content:""; position:absolute; left:50%; top:4px; width:2px; height:10px; margin-left:-1px; background:var(--amber); border-radius:1px; }
+  .display {
+    flex:1; min-width:0; padding:10px 12px; background:#050403; border:2px solid #000; border-radius:8px;
+    box-shadow:inset 0 0 14px rgba(255,176,0,.12), 0 0 0 1px #3a3a40;
+  }
+  .small { display:flex; justify-content:space-between; font-size:10px; letter-spacing:.2em; opacity:.7; }
+  .big { font-size:22px; letter-spacing:.14em; margin:6px 0 8px; min-height:28px; text-transform:uppercase; text-shadow:0 0 8px var(--glow); }
+  .big.err { color:var(--red); text-shadow:0 0 8px rgba(255,90,54,.7); }
+  .blink::after { content:"_"; animation:b 1s steps(1) infinite; }
+  @keyframes b { 50% { opacity:0; } }
+  .field {
+    display:block; width:100%; margin:0; padding:10px 0 4px; border:0; border-top:1px dashed rgba(255,176,0,.35); border-radius:0;
+    background:transparent; color:var(--amber); font:inherit; font-size:16px; outline:0; caret-color:var(--amber);
+    text-shadow:0 0 6px var(--glow);
+  }
+  .field::placeholder { color:rgba(255,176,0,.4); text-transform:uppercase; letter-spacing:.1em; }
+  .msg { font-size:11px; color:var(--red); margin:6px 0 0; word-break:break-word; letter-spacing:.05em; }
+  .buttons { display:grid; grid-template-columns:2fr 1fr; gap:10px; margin-top:14px; }
+  .btn {
+    width:100%; padding:16px 8px; font:inherit; font-size:13px; font-weight:700; letter-spacing:.2em; color:var(--amber);
+    text-shadow:0 0 6px var(--glow); background:linear-gradient(#3a3a40, #222226); border:1px solid #000; border-radius:10px;
+    box-shadow:0 1px 0 rgba(255,255,255,.2) inset, 0 3px 0 #0a0a0a, 0 4px 6px rgba(0,0,0,.6);
+  }
+  .btn:active { transform:translateY(2px); box-shadow:0 1px 0 rgba(255,255,255,.15) inset, 0 1px 0 #0a0a0a; }
+  .btn:disabled { opacity:.45; }
+  #out { margin-top:16px; padding:12px; background:#101012; border:1px solid #2c2c31; border-radius:10px; }
+  audio { width:100%; color-scheme:dark; }
+  #save { margin-top:10px; }
+  .hint { color:#9a9aa2; font-size:11px; margin:10px 0 0; }
 </style>
 </head>
 <body>
-<main>
-  <h1>Link to MP3</h1>
-  <p class="sub">Instagram, TikTok or YouTube</p>
-  <form id="f">
-    <input id="url" type="url" inputmode="url" autocapitalize="off" autocorrect="off"
-           placeholder="Paste a link" required>
-    __CODE__
-    <button id="go" type="submit">Extract audio</button>
-  </form>
-  <p class="err" id="msg"></p>
+<main class="unit">
+  <div class="top"><span class="brand">LINK·MP3</span><span>DIGITAL STEREO</span></div>
+  <div class="face">
+    <div class="knob"></div>
+    <div class="display">
+      <div class="small"><span>SRC WEB</span><span>MP3 192K</span></div>
+      <div id="status" class="big">Ready</div>
+      <form id="f">
+        <input id="url" class="field" type="url" inputmode="url" autocapitalize="off" autocorrect="off"
+               placeholder="Paste IG / TikTok / YT link" required>
+        __CODE__
+      </form>
+      <p class="msg" id="msg"></p>
+    </div>
+    <div class="knob"></div>
+  </div>
+  <div class="buttons">
+    <button id="go" class="btn" type="submit" form="f">EXTRACT</button>
+    <button id="clear" class="btn" type="button">CLEAR</button>
+  </div>
   <div id="out" hidden>
     <audio id="player" controls></audio>
-    <button id="save" type="button">Save / Share MP3</button>
+    <button id="save" class="btn" type="button">SAVE / SHARE MP3</button>
     <p class="hint" id="hint"></p>
     <a id="dl" hidden></a>
   </div>
 </main>
 <script>
-const f = document.getElementById('f'), url = document.getElementById('url');
-const go = document.getElementById('go'), msg = document.getElementById('msg');
-const out = document.getElementById('out'), player = document.getElementById('player');
-const save = document.getElementById('save'), dl = document.getElementById('dl');
-const hint = document.getElementById('hint');
-const codeEl = document.getElementById('code');
+const $ = (id) => document.getElementById(id);
+const f = $('f'), url = $('url'), go = $('go'), clr = $('clear'), status = $('status'), msg = $('msg');
+const out = $('out'), player = $('player'), save = $('save'), dl = $('dl'), hint = $('hint'), codeEl = $('code');
+let blobUrl = null;
+
 if (codeEl) { try { codeEl.value = localStorage.getItem('code') || ''; } catch (_) {} }
+
+function setStatus(text, cls) {
+  status.textContent = text;
+  status.className = 'big' + (cls ? ' ' + cls : '');
+}
+
+function dropAudio() {
+  player.pause();
+  player.removeAttribute('src');
+  player.load();
+  if (blobUrl) { URL.revokeObjectURL(blobUrl); blobUrl = null; }
+  out.hidden = true;
+}
+
+clr.addEventListener('click', () => {
+  dropAudio();
+  url.value = '';
+  msg.textContent = '';
+  setStatus('Ready');
+  url.focus();
+});
 
 f.addEventListener('submit', async (e) => {
   e.preventDefault();
   msg.textContent = '';
-  out.hidden = true;
+  dropAudio();
   go.disabled = true;
-  go.textContent = 'Working…';
+  setStatus('Working', 'blink');
   try {
     if (codeEl) { try { localStorage.setItem('code', codeEl.value); } catch (_) {} }
     const r = await fetch('/extract', {
@@ -127,12 +189,12 @@ f.addEventListener('submit', async (e) => {
     const name = r.headers.get('X-Filename') || 'audio.mp3';
     const blob = await r.blob();
     const file = new File([blob], name, { type: 'audio/mpeg' });
-    const href = URL.createObjectURL(blob);
-    player.src = href;
-    dl.href = href;
+    blobUrl = URL.createObjectURL(blob);
+    player.src = blobUrl;
+    dl.href = blobUrl;
     dl.download = name;
     const canShare = !!(navigator.canShare && navigator.canShare({ files: [file] }));
-    hint.textContent = canShare ? '' : 'Tip: if saving does nothing, press and hold the player or open this page in Safari.';
+    hint.textContent = canShare ? '' : 'If saving does nothing, press and hold the player or open this page in Safari.';
     save.onclick = async () => {
       if (canShare) {
         try { await navigator.share({ files: [file] }); } catch (_) {}
@@ -141,11 +203,12 @@ f.addEventListener('submit', async (e) => {
       }
     };
     out.hidden = false;
+    setStatus('Done');
   } catch (err) {
+    setStatus('Error', 'err');
     msg.textContent = err.message;
   } finally {
     go.disabled = false;
-    go.textContent = 'Extract audio';
   }
 });
 </script>
@@ -156,7 +219,7 @@ f.addEventListener('submit', async (e) => {
 
 def make_icon(size=512):
     """Dependency-free PNG: dark square with white sound-wave bars."""
-    bg, fg = (17, 17, 17), (255, 255, 255)
+    bg, fg = (10, 10, 10), (255, 176, 0)
     bars = [0.25, 0.5, 0.8, 0.5, 0.35, 0.65, 0.3]
     n = len(bars)
     margin = size * 0.2
@@ -196,8 +259,8 @@ def valid(url: str) -> bool:
 
 @app.route("/")
 def index():
-    field = ('<input id="code" type="password" placeholder="Access code" required '
-             'style="margin-top:12px">') if ACCESS_CODE else ""
+    field = ('<input id="code" class="field" type="password" placeholder="Access code" '
+             'required>') if ACCESS_CODE else ""
     return PAGE.replace("__CODE__", field)
 
 
